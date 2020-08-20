@@ -1,0 +1,238 @@
+<html>
+
+	<head>
+		<style>
+		canvas{
+				   border  : 1px solid black;
+				  }
+		</style>
+		<canvas id="tetris" width="200" height="600"></canvas>
+	</head>
+	<body>
+		
+		<script>
+		
+			var canvas = document.getElementById("tetris");
+			var context= canvas.getContext('2d');
+			var activeTetrimino;
+			var tetriminoNum,xPos;
+			var row,col,y;
+			var direction="";
+			var squares=[[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0]];
+			var isFullRow=true;
+		
+			const tetrimino1=[[0,0,0],[0,0,0],[1,1,1]]; 
+			const tetrimino2=[[0,0,0],[0,1,0],[1,1,1]];
+			const tetrimino3=[[1,0,0],[1,0,0],[1,0,0]];
+			const tetrimino4=[[0,0,1],[0,0,1],[0,0,1]];
+			const tetrimino5=[[0,0,0],[1,0,0],[1,1,1]];
+			const tetrimino6=[[0,0,0],[0,0,1],[1,1,1]];
+			const tetrimino7=[[0,0,0],[0,1,1],[0,1,1]];
+			const tetrimino8=[[0,1,0],[0,1,0],[0,1,0]];
+			const tetrimino9=[[0,0,0],[0,1,0],[1,1,0]];
+			const tetrimino10=[[0,0,0],[0,1,0],[0,1,1]];
+			const tetrimino11=[[0,0,0],[1,1,0],[1,1,0]];
+			const tetrimino12=[[0,0,0],[0,0,0],[0,0,1]];
+			const tetrimino13=[[0,0,0],[0,0,0],[1,0,0]];
+			const tetrimino14=[[0,0,0],[0,0,0],[0,1,0]];
+			
+			const tetriminoes=[tetrimino1,tetrimino2,tetrimino3,tetrimino4,tetrimino5,tetrimino6,tetrimino7,tetrimino8,tetrimino9,tetrimino10,tetrimino11,tetrimino12,tetrimino13,tetrimino14];
+			
+			class Tetrimino{
+				
+				constructor(startX,startY,squares){
+					this._startX=startX;
+					this._startY=startY;
+					this._locked=false;
+					this._squares=squares;
+				}
+				
+				set startX(newStartX){
+					this._startX=newStartX;
+				}
+				
+				get startX(){
+					return this._startX;
+				}
+				
+				set startY(newStartY){
+					this._startY=newStartY;
+				}
+				
+				get startY(){
+					return this._startY;
+				}
+				
+				set squares(newSquares){
+					this._squares=newSquares;
+				}
+				
+				get squares(){
+					return this._squares;
+				}
+				
+				set locked(newLocked){
+					this._locked=newLocked;
+				}
+				
+				get locked(){
+					return this._locked;
+				}
+
+			}
+			
+			function nextTetrimino(){
+				
+				tetriminoNum=Math.floor(Math.random()*13);
+				xPos=Math.floor(Math.random()*7);
+				
+				activeTetrimino= new Tetrimino(xPos,-3,tetriminoes[tetriminoNum]);
+			}
+			
+			function updateTetriminoes(){
+				
+				// clear canvas 
+				context.clearRect(0,0,200,600);
+				
+				// draw background 
+				context.fillStyle="black";
+				context.fillRect(0,0,200,600);
+				
+				// fill in squares 
+				context.fillStyle="white";
+				for(row=0;row<=29;row++){
+					for(col=0;col<=9;col++){
+						
+						if(squares[row][col] == 1){
+							
+							context.fillRect(col*20,row*20,20,20);
+						}
+						
+				
+					}
+				}
+				
+				// draw active tetrimino
+				for(row=0;row<=2;row++){
+					for(col=0;col<=2;col++){
+						
+						if(activeTetrimino.squares[row][col] == 1){
+							
+							context.fillRect((activeTetrimino.startX+col)*20,(activeTetrimino.startY+row)*20,20,20);
+	
+							// condition for which activeTetrimino becomes locked 
+							if(activeTetrimino.startY>=0 && (activeTetrimino.startY+2>=29 || squares[activeTetrimino.startY+3][activeTetrimino.startX+col]==1)){
+								activeTetrimino.locked=true;
+							}
+						}
+						
+						
+						
+					}
+				}
+				
+				// move active tetrimino 
+				if(direction =="left" && activeTetrimino.startX>0 && !activeTetrimino.locked && squares[parseInt(activeTetrimino.startY)][parseInt(activeTetrimino.startX-1)]==0 && squares[parseInt(activeTetrimino.startY+1)][parseInt(activeTetrimino.startX-1)]==0 && squares[parseInt(activeTetrimino.startY+2)][parseInt(activeTetrimino.startX-1)]==0 ){
+					activeTetrimino.startX--;
+				}
+				
+				else if(direction =="right" && activeTetrimino.startX<7 && !activeTetrimino.locked && squares[parseInt(activeTetrimino.startY)][parseInt(activeTetrimino.startX+3)]==0 && squares[parseInt(activeTetrimino.startY+1)][parseInt(activeTetrimino.startX+3)]==0 && squares[parseInt(activeTetrimino.startY+2)][parseInt(activeTetrimino.startX+3)]==0){
+					activeTetrimino.startX++;
+				}
+				
+				direction="";
+				
+				// decide what do if tetrimino is locked or not 
+				if(!activeTetrimino.locked){
+					activeTetrimino.startY++;
+				}
+				
+				else if(activeTetrimino.locked){
+				
+
+					// check if game is over 
+					
+					if(activeTetrimino.startY <=0){
+						location.reload();
+					}
+					
+					else if(activeTetrimino.startY>0){
+						
+						
+						// fill in all squares that the locked tetrimino occupies 
+						for(row=0;row<=2;row++){
+							for(col=0;col<=2;col++){
+							
+								if(activeTetrimino.squares[row][col] == 1){
+									squares[activeTetrimino.startY+row][activeTetrimino.startX+col]=1;
+								}
+							}
+						}
+						
+						// check if a row is full 
+						for(row=0;row<=29;row++){
+						
+							isRowFull=true;
+							
+							for(col=0;col<=9;col++){
+							
+								isRowFull=isRowFull && squares[row][col]!=0;
+							}
+								if(isRowFull){
+									for(y=row;y>1;y--){
+										for(col=0;col<=9;col++){
+										
+											squares[y][col]=squares[y-1][col];
+										}
+									}
+									
+									for(col=0;col<=9;col++){
+										squares[0][col]=0;
+									}
+								}
+								
+								
+							
+						}
+						
+						
+						
+						nextTetrimino();
+						
+					
+					}
+							
+			
+				}
+				
+				
+			}
+			
+			function init(){
+				
+				nextTetrimino();
+				
+				setInterval(updateTetriminoes,200);
+				
+				document.addEventListener("keydown",function(event){
+					
+					// move tetrimino left 
+					if(event.keyCode == 37){
+						direction="left";
+						
+					}
+					
+					// move tetrimino right
+					else if(event.keyCode == 39){
+						direction="right";
+						
+					}
+				});
+			
+			}
+			
+			window.onload=init;
+			
+		</script>
+	</body>
+</html>
